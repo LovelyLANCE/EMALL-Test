@@ -53,8 +53,15 @@ jobs:
         docker-compose -f docker-compose.prod.yml push
 
     - name: Deploy to production
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_USER: ${{ secrets.SSH_USER }}
+        SSH_HOST: ${{ secrets.SSH_HOST }}
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} <<EOF
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST <<EOF
           docker-compose -f /path/to/your/docker-compose.prod.yml pull
           docker-compose -f /path/to/your/docker-compose.prod.yml up -d
         EOF
